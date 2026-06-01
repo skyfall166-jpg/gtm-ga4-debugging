@@ -1,10 +1,10 @@
 # Portfolio Summary — GTM / GA4 Debugging & Measurement QA
 
-**Name:** [Your Name]
+**Name:** [Poornima K]
 **Role Target:** GTM Specialist | GA4 Implementation | Measurement QA
 **Location:** Pune, India
-**LinkedIn:** [your-linkedin-url]
-**GitHub:** [your-github-url]
+**LinkedIn:** [www.linkedin.com/in/k-poornima]
+**GitHub:** [https://github.com/skyfall166-jpg/gtm-ga4-debugging/edit/main/portfolio-summary/README.md]
 
 ---
 
