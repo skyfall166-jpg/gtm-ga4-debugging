@@ -4,7 +4,7 @@
 **Role Target:** GTM Specialist | GA4 Implementation | Measurement QA
 **Location:** Pune, India
 **LinkedIn:** www.linkedin.com/in/k-poornima
-**GitHub:** https://github.com/skyfall166-jpg/gtm-ga4-debugging/edit/main/portfolio-summary/README.md
+**GitHub:** https://github.com/skyfall166-jpg/gtm-ga4-debugging/tree/main/portfolio-summary 
 
 ---
 
