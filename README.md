@@ -125,6 +125,7 @@ Each project folder contains:
 09-ecommerce-purchase-debugging
 10-data-layer-reverse-engineering
 audit-cases
+portfolio-summary
 templates
 ```
 
