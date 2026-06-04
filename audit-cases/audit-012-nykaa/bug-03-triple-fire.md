@@ -1,39 +1,82 @@
-# Bug 03 — add_to_cart Fires Three Times
+\# Bug 3 — Triple-Firing add\_to\_cart Events
 
-## Severity
 
-Critical
 
-## Surface
+\*\*Finding ID:\*\* F3
 
-[GTM] → [GA4]
+\*\*Severity:\*\* High
 
-## Problem
+\*\*Confidence:\*\* Confirmed
 
-Single Add to Bag click generates three collect requests.
+\*\*Surface:\*\* \[TAG] \[NETWORK]
 
-## Evidence
+\*\*Status:\*\* Open
 
-Observed:
 
-Property A → 2 hits
 
-Property B → 1 hit
+\## Symptom
 
-Screenshot:
 
-network-triple-fire.png
 
-## Root Cause
+A single add-to-cart action generates three add\_to\_cart requests.
 
-Multiple measurement paths appear to execute for the same interaction.
 
-## Impact
 
-- Inflated add_to_cart counts
-- Audience inflation
-- Funnel distortion
+\## Evidence
 
-## Fix
 
-Ensure one user action generates one measurement event.
+
+Network inspection captured three add\_to\_cart requests triggered from a single user interaction.
+
+
+
+Requests occurred during the same session and action sequence.
+
+
+
+\## Root Cause
+
+
+
+Multiple event generation paths are firing for the same interaction.
+
+
+
+Container access is required to determine the exact implementation source.
+
+
+
+\## Business Impact
+
+
+
+\* Cart activity may be overstated up to 3×
+
+\* Funnel conversion metrics become unreliable
+
+\* Add-to-cart reporting is inflated
+
+\* Ecommerce optimisation decisions may be affected
+
+
+
+\## Fix
+
+
+
+Audit all add\_to\_cart firing mechanisms.
+
+
+
+Remove duplicate event generation paths.
+
+
+
+\## Verification
+
+
+
+One user click should generate one add\_to\_cart request.
+
+
+

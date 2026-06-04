@@ -1,39 +1,68 @@
-# Bug 05 — Non-Standard Ecommerce Parameters
+\# Bug 5 — Non-Standard Ecommerce Parameters
 
-## Severity
 
-Medium
 
-## Surface
+\*\*Finding ID:\*\* F5
 
-[GA4]
+\*\*Severity:\*\* Medium
 
-## Problem
+\*\*Confidence:\*\* Confirmed
 
-Custom parameter names used instead of GA4 ecommerce schema.
+\*\*Surface:\*\* \[GA4] \[NETWORK]
 
-## Evidence
+\*\*Status:\*\* Open
 
-Observed:
 
-variantName
 
-offerPrice
+\## Symptom
 
-Expected:
 
-item_variant
 
-price
+Ecommerce payload contains parameters that do not align with GA4 recommended ecommerce schema.
 
-Screenshot:
 
-network-add-to-cart-02.png
 
-## Impact
+\## Evidence
 
-Standard ecommerce reports may not recognize these values.
 
-## Fix
 
-Use GA4 recommended parameter names.
+Network inspection identified custom ecommerce parameters being sent instead of expected GA4 ecommerce item fields.
+
+
+
+\## Root Cause
+
+
+
+Implementation relies on custom ecommerce structures rather than GA4-native ecommerce architecture.
+
+
+
+\## Business Impact
+
+
+
+\* Non-standard fields may be ignored by GA4
+
+\* Reporting gaps may occur
+
+\* Product-level analysis becomes less reliable
+
+
+
+\## Fix
+
+
+
+Align ecommerce implementation with GA4 recommended ecommerce schema.
+
+
+
+\## Verification
+
+
+
+GA4 ecommerce requests should use standard ecommerce item parameters and structures.
+
+
+

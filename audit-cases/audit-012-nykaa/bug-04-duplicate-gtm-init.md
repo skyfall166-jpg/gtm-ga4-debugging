@@ -1,37 +1,76 @@
-# Bug 04 — Suspected Duplicate GTM Initialization
+\# Bug 4 — Suspected Duplicate GTM Initialization
 
-## Severity
 
-High
 
-## Surface
+\*\*Finding ID:\*\* F4
 
-[GTM]
+\*\*Severity:\*\* Medium
 
-## Problem
+\*\*Confidence:\*\* Suspected
 
-Two gtm.js initialization events observed.
+\*\*Surface:\*\* \[GTM] \[TAG]
 
-## Evidence
+\*\*Status:\*\* Open
 
-gtm.start
 
-gtm.start
 
-53ms difference
+\## Symptom
 
-Screenshot:
 
-console-datalayer-all.png
 
-## Root Cause
+Observed event behaviour suggests multiple execution paths may exist within the implementation.
 
-Likely duplicate GTM installation.
 
-## Impact
 
-Potential double-firing across tags.
+\## Evidence
 
-## Fix
 
-Audit GTM deployment and remove duplicate initialization.
+
+Repeated ecommerce activity patterns and duplicate request behaviour indicate possible duplicate tag execution.
+
+
+
+No GTM access was available to verify directly.
+
+
+
+\## Root Cause
+
+
+
+Suspected duplicate GTM initialization or overlapping ecommerce triggers.
+
+
+
+Additional access required for confirmation.
+
+
+
+\## Business Impact
+
+
+
+\* Increased risk of duplicate measurement
+
+\* Potential reporting inflation
+
+\* Reduced confidence in event accuracy
+
+
+
+\## Fix
+
+
+
+Review GTM container for duplicate initialization and overlapping triggers.
+
+
+
+\## Verification
+
+
+
+Each ecommerce interaction should trigger a single execution path.
+
+
+

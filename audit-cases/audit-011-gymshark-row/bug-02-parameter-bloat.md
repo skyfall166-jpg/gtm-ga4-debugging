@@ -1,36 +1,76 @@
-Bug 2 — Experiment Parameter Bloat
-
-Classification
+\# Bug 2 — Parameter Bloat on Ecommerce Hits
 
 
 
-\[TAG] — Medium
+\*\*Finding ID:\*\* F2  
+
+\*\*Severity:\*\* Medium  
+
+\*\*Confidence:\*\* Confirmed  
+
+\*\*Surface:\*\* \[TAG] \[NETWORK]  
+
+\*\*Status:\*\* Open
 
 
 
-Finding
+\## Symptom
 
 
 
-More than 20 experiment-related parameters are attached to nearly every GA4 event.
+Ecommerce payloads contain excessive experiment and testing-related parameters.
 
 
 
-Impact
-
-Consumes GA4 parameter capacity
-
-Increases payload size
-
-Creates reporting complexity
-
-Increases maintenance overhead
-
-Evidence
+\## Evidence
 
 
 
-Screenshots:
+Network inspection identified more than 20 additional experiment parameters attached to ecommerce requests.
 
 
+
+These parameters were unrelated to core ecommerce measurement.
+
+
+
+\## Root Cause
+
+
+
+Experimentation and testing metadata is being appended to production ecommerce payloads.
+
+
+
+\## Business Impact
+
+
+
+\- Increased implementation complexity
+
+\- Harder debugging workflows
+
+\- Reduced payload readability
+
+\- Increased maintenance overhead
+
+
+
+\## Fix
+
+
+
+Review experiment-related parameters.
+
+
+
+Remove unused or redundant fields from ecommerce payloads.
+
+
+
+\## Verification
+
+
+
+Ecommerce requests should contain only business-critical parameters required for reporting.
 

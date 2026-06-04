@@ -1,24 +1,84 @@
-Bug 4 — Parallel GA4 and Google Ads Collection
-Classification
+\# Bug 4 — Parallel GA4 and Google Ads Collection
 
-[TAG] — Observation
 
-Finding
 
-GA4 and Google Ads requests fire together for ecommerce interactions.
+\*\*Finding ID:\*\* F4  
 
-Impact
+\*\*Severity:\*\* Observation  
 
-Expected implementation pattern.
+\*\*Confidence:\*\* Confirmed  
 
-No defect observed.
+\*\*Surface:\*\* \[TAG] \[ADS]  
 
-Watch Point
+\*\*Status:\*\* Monitoring
 
-Future ecommerce fixes should be validated across both platforms.
 
-Evidence
 
-Screenshots:
+\## Symptom
 
-06-dual-collect-hits.png
+
+
+Ecommerce interactions generate both GA4 and Google Ads collection requests.
+
+
+
+\## Evidence
+
+
+
+Network inspection showed simultaneous requests being sent to:
+
+
+
+\- GA4 endpoints
+
+\- Google Ads endpoints
+
+
+
+during ecommerce interactions.
+
+
+
+\## Root Cause
+
+
+
+Likely intentional dual-platform measurement implementation.
+
+
+
+\## Business Impact
+
+
+
+Observation only.
+
+
+
+Dual collection is common but should be reviewed to ensure:
+
+
+
+\- Measurement consistency
+
+\- Proper attribution
+
+\- No duplicate counting
+
+
+
+\## Fix
+
+
+
+Validate mapping consistency across GA4 and Google Ads implementations.
+
+
+
+\## Verification
+
+
+
+Equivalent ecommerce interactions should generate expected requests in both platforms without duplication.
+

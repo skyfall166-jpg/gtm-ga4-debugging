@@ -1,31 +1,68 @@
-# Bug 06 — Generic Checkout Page Title
+\# Bug 6 — Generic Checkout Title
 
-## Severity
 
-Low
 
-## Surface
+\*\*Finding ID:\*\* F6
 
-[GA4]
+\*\*Severity:\*\* Low
 
-## Problem
+\*\*Confidence:\*\* Confirmed
 
-Checkout pages use generic site title.
+\*\*Surface:\*\* \[GA4]
 
-## Evidence
+\*\*Status:\*\* Open
 
-Observed:
 
-Buy cosmetics & beauty products online...
 
-Screenshot:
+\## Symptom
 
-network-page-view-01.png
 
-## Impact
 
-Checkout steps cannot be easily analyzed through Page Title reports.
+Generic values are passed where product-specific or business-specific metadata is expected.
 
-## Fix
 
-Implement checkout-specific document titles.
+
+\## Evidence
+
+
+
+Checkout-related payloads contained generic titles that provided little business context.
+
+
+
+\## Root Cause
+
+
+
+Descriptive metadata is not being populated before event transmission.
+
+
+
+\## Business Impact
+
+
+
+\* Reduced reporting clarity
+
+\* Harder debugging and validation
+
+\* Lower analytical value of ecommerce reports
+
+
+
+\## Fix
+
+
+
+Populate meaningful checkout metadata before firing events.
+
+
+
+\## Verification
+
+
+
+Checkout events should contain descriptive and business-relevant values.
+
+
+

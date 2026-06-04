@@ -1,40 +1,124 @@
-# User Type Classification Mismatch
+\# Bug 5 — User Classification Mismatch
 
-## Problem
 
-dataLayer and GA4 payload classify the same user differently.
 
-## Evidence
+\*\*Finding ID:\*\* F3
+
+\*\*Severity:\*\* Medium
+
+\*\*Confidence:\*\* Suspected
+
+\*\*Surface:\*\* \[DATALAYER] \[GA4]
+
+\*\*Status:\*\* Open
+
+
+
+\## Symptom
+
+
+
+The dataLayer and GA4 payload classify the same user differently.
+
+
+
+\## Evidence
+
+
 
 dataLayer:
 
+
+
 userType = returning
+
+
 
 GA4 payload:
 
-Customer_Type_Analytics = Not_Repeat
 
-Same page load.
-Same session.
 
-## Root Cause
+ep.Customer\_Type\_Analytics = Not\_Repeat
 
-[DATALAYER] [GA4]
 
-Likely mismatch between classification sources.
 
-Possible sources:
+Both values were observed during the same page load and session.
 
-- Cookie logic
-- CRM logic
-- Incorrect GTM variable mapping
 
-## Fix
 
-Identify source for Customer_Type_Analytics and align with documented user classification logic.
+\## Root Cause
 
-## Business Impact
 
-- Unreliable user segmentation
-- Audience creation inaccuracies
-- Inconsistent lifecycle reporting
+
+\*\*Suspected\*\*
+
+
+
+Possible causes include:
+
+
+
+\* Different data sources
+
+\* Cookie-based classification logic
+
+\* CRM-based classification logic
+
+\* Incorrect GTM variable mapping
+
+
+
+Additional investigation is required.
+
+
+
+\## Business Impact
+
+
+
+\* Inconsistent user segmentation
+
+\* Audience creation inaccuracies
+
+\* CRM synchronization issues
+
+\* Reduced confidence in lifecycle reporting
+
+
+
+\## Fix
+
+
+
+Identify the source feeding Customer\_Type\_Analytics.
+
+
+
+Align both classifications to a single documented source of truth.
+
+
+
+\## Verification
+
+
+
+For the same user session:
+
+
+
+userType
+
+
+
+and
+
+
+
+Customer\_Type\_Analytics
+
+
+
+should return consistent values.
+
+
+

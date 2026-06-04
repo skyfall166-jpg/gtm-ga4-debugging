@@ -1,40 +1,124 @@
-# Currency Missing from Ecommerce Payload
+\# Bug 4 — Currency Missing from Ecommerce Payload
 
-## Problem
 
-No currency value found in the view_item payload.
 
-## Evidence
+\*\*Finding ID:\*\* F2c
 
-Network payload reviewed.
+\*\*Severity:\*\* Medium
 
-Not found:
+\*\*Confidence:\*\* Confirmed
 
-cu=
-currency=
+\*\*Surface:\*\* \[DATALAYER]
 
-Console:
+\*\*Status:\*\* Open
 
-items[0].currency
 
-returns undefined.
 
-## Root Cause
+\## Symptom
 
-[DATALAYER]
 
-Currency not included in ecommerce implementation.
 
-## Fix
+No currency value was observed within the view\_item payload.
 
-Add:
+
+
+\## Evidence
+
+
+
+Full payload inspection found no:
+
+
+
+\* cu=
+
+\* currency=
+
+\* event-level currency parameter
+
+
+
+Console inspection also showed:
+
+
+
+items\[0].currency
+
+
+
+returned undefined.
+
+
+
+\## Root Cause
+
+
+
+Currency is not being added to the ecommerce implementation.
+
+
+
+Additional evidence suggests incomplete ecommerce migration due to the presence of non-standard fields such as:
+
+
+
+\* product\_id
+
+\* inStock
+
+
+
+\## Business Impact
+
+
+
+\* Reliance on GA4 property default currency
+
+\* Increased implementation risk
+
+\* Potential future issues in multi-currency reporting
+
+\* Ecommerce data quality degradation
+
+
+
+\## Fix
+
+
+
+Add currency at the ecommerce event level.
+
+
+
+Example:
+
+
 
 currency: "INR"
 
-at event level.
 
-## Business Impact
 
-- Reliance on GA4 property default currency
-- Increased risk during future international expansion
-- Ecommerce data quality degradation
+Remove or properly map non-standard ecommerce fields.
+
+
+
+\## Verification
+
+
+
+Network payload should contain:
+
+
+
+currency=INR
+
+
+
+or
+
+
+
+cu=INR
+
+
+

@@ -1,39 +1,72 @@
-# Bug 02 — Product Data Exists But Is Not Mapped
+\# Bug 2 — Product Data Exists but is Not Mapped
 
-## Severity
 
-Critical
 
-## Surface
+\*\*Finding ID:\*\* F2
 
-[DATALAYER] → [GTM]
+\*\*Severity:\*\* High
 
-## Problem
+\*\*Confidence:\*\* Confirmed
 
-Product information exists inside cartItems[] but is not observed reaching GA4 ecommerce schema.
+\*\*Surface:\*\* \[DATALAYER] \[GA4]
 
-## Evidence
+\*\*Status:\*\* Open
 
-Observed:
 
-addToCartSuccess
 
-cartAdditionSuccess
+\## Symptom
 
-cartItems[]
 
-Screenshot:
 
-console-cartitems-expanded.png
+Product information exists within browser-side data structures but is not transmitted in the GA4 ecommerce payload.
 
-## Root Cause
 
-No browser-side evidence shows transformation from cartItems[] to ecommerce.items[].
 
-## Impact
+\## Evidence
 
-GA4 receives incomplete ecommerce information.
 
-## Fix
 
-Map cartItems[] into ecommerce.items[] before tag execution.
+Product metadata was available on the page and observable through browser inspection.
+
+
+
+Equivalent GA4 ecommerce item parameters were absent from the add\_to\_cart request.
+
+
+
+\## Root Cause
+
+
+
+Product data collection exists but mapping into GA4 ecommerce fields is incomplete.
+
+
+
+\## Business Impact
+
+
+
+\* Product reporting becomes incomplete
+
+\* Ecommerce attribution loses valuable context
+
+\* Product performance analysis is reduced
+
+
+
+\## Fix
+
+
+
+Map available product metadata into GA4 items\[] parameters.
+
+
+
+\## Verification
+
+
+
+Product information visible in browser-side data structures should also appear within GA4 ecommerce payloads.
+
+
+

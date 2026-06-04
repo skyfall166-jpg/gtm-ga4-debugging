@@ -1,56 +1,94 @@
-Bug 5 — UA Enhanced Ecommerce Schema Not Migrated
-
-Classification
+\# Bug 5 — UA-GA4 Ecommerce Schema Mismatch
 
 
 
-\[DATALAYER] — Critical
+\*\*Finding ID:\*\* F5  
+
+\*\*Severity:\*\* Critical  
+
+\*\*Confidence:\*\* Confirmed  
+
+\*\*Surface:\*\* \[DATALAYER] \[GA4]  
+
+\*\*Status:\*\* Open
 
 
 
-Finding
+\## Symptom
 
 
 
-The dataLayer continues to use UA Enhanced Ecommerce event names:
+Gymshark appears to be collecting ecommerce data through GA4 while continuing to rely on UA-style ecommerce architecture.
 
 
 
-ee-productView
-
-ee-addToCart
-
-ee-productClick
-
-ee-productImpression
+\## Evidence
 
 
 
-GA4-standard ecommerce events were not observed.
+Rich product metadata exists within browser-observable ecommerce objects including:
 
 
 
-Impact
+\- Product ID
+
+\- Product Name
+
+\- Category
+
+\- SKU
+
+\- Variant Information
 
 
 
-Product information exists but is not available through GA4-standard ecommerce reporting.
+However equivalent GA4 items\[] mappings were not consistently present within ecommerce payloads.
 
 
 
-Evidence
+\## Root Cause
 
 
 
-Screenshots:
+Migration to GA4 collection appears complete.
 
 
 
-04-datalayer-ee-events.png
-
-05-console-product-object.png
+Migration of underlying ecommerce data architecture appears incomplete.
 
 
 
+\## Business Impact
 
+
+
+\- Product attribution gaps
+
+\- SKU reporting limitations
+
+\- Variant analysis limitations
+
+\- Ecommerce funnel reporting gaps
+
+\- Reduced visibility into product performance
+
+
+
+\## Fix
+
+
+
+Complete migration from UA Enhanced Ecommerce structures to GA4-native ecommerce schema.
+
+
+
+Ensure all ecommerce events populate items\[] correctly.
+
+
+
+\## Verification
+
+
+
+GA4 ecommerce events should consistently contain populated items\[] arrays carrying complete product metadata.
 
