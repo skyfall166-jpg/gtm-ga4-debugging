@@ -1,25 +1,130 @@
-# audit-011 — Gymshark ROW Ecommerce Tracking Audit
+# Gymshark ROW Ecommerce Tracking Audit
 
-## Overview
-
-This audit evaluates the ecommerce tracking implementation on Gymshark ROW using external browser-based debugging techniques.
-
-The objective was to assess the quality of GA4 ecommerce measurement by inspecting the dataLayer, network requests, and analytics payloads without access to the GTM container, GA4 property, or source code.
-
-The audit identified a critical root-cause issue: Gymshark appears to have completed GA4 collection migration but not the underlying ecommerce data architecture migration from Universal Analytics (UA) Enhanced Ecommerce to GA4.
+**Audit ID:** audit-011
+**Website:** Gymshark ROW
+**Page Type:** Product Detail Page (PDP)
+**Audit Method:** External Browser-Based Audit
+**Tools Used:** Chrome DevTools (Network, Console)
+**Date:** 01-06-2026
 
 ---
 
-## Audit Information
+## Audit Scope
 
-| Field        | Value                                                         |
-| ------------ | ------------------------------------------------------------- |
-| Website      | row.gymshark.com                                              |
-| Audit Type   | External Browser-Based Audit                                  |
-| Audit Date   | 03-Jun-2026                                                   |
-| Auditor      | Miss                                                          |
-| Tools Used   | Chrome DevTools, Network Tab, Console, GA4 Payload Inspection |
-| Access Level | No GTM, GA4, or Source Code Access                            |
+This audit was conducted using publicly accessible browser-side data only.
+
+### Access Constraints
+
+* No GTM container access
+* No GA4 property access
+* No server-side tagging visibility
+* No GTM Preview mode
+* No source code access
+
+All findings are based on:
+
+* Network request inspection
+* dataLayer inspection
+* Browser console analysis
+* GA4 payload validation
+
+---
+
+## Business Impact Overview
+
+Audit identified **4 confirmed findings** and **1 investigative finding** affecting Gymshark's ecommerce measurement implementation.
+
+If left unresolved:
+
+* **GA4 cannot reliably attribute add_to_cart activity to products** because add_to_cart events fire without the required items[] array (Bug 1)
+
+* **Product metadata remains trapped in the UA-style ecommerce architecture** and is not consistently reaching GA4 ecommerce reports (Bug 5)
+
+* **Product performance reporting may be incomplete** because rich product information exists but is not mapped into GA4-native ecommerce structures (Bug 1, Bug 5)
+
+* **Payload bloat increases implementation complexity** and introduces unnecessary debugging overhead through dozens of experiment-related parameters attached to ecommerce hits (Bug 2)
+
+* **Revenue validation becomes more difficult** when product pricing differs between the UI and analytics payloads (Bug 3)
+
+Analytics-based decisions on product attribution, ecommerce funnel analysis, SKU performance, variant performance, and revenue reporting may be affected until these findings are investigated and resolved.
+
+---
+
+## Findings Summary
+
+| Bug   | Finding                                  | Severity      | Confidence    |
+| ----- | ---------------------------------------- | ------------- | ------------- |
+| Bug 1 | add_to_cart missing items[]              | Critical      | Confirmed     |
+| Bug 2 | Parameter bloat on ecommerce hits        | Medium        | Confirmed     |
+| Bug 3 | Price discrepancy between UI and payload | Investigative | Investigative |
+| Bug 4 | Parallel GA4 and Google Ads collection   | Observation   | Confirmed     |
+| Bug 5 | UA-GA4 ecommerce schema mismatch         | Critical      | Confirmed     |
+
+---
+
+## Audit Statistics
+
+| Metric                 | Count |
+| ---------------------- | ----- |
+| Total Findings         | 5     |
+| Confirmed Findings     | 4     |
+| Investigative Findings | 1     |
+| Critical Severity      | 2     |
+| Medium Severity        | 1     |
+| Observation            | 1     |
+| Investigative          | 1     |
+
+---
+
+## Key Findings
+
+### Bug 1 — add_to_cart Missing items[]
+
+**Symptom:** add_to_cart events fire without a populated GA4 items[] array.
+
+**Evidence:** Network payload inspection showed add_to_cart requests missing expected GA4 item parameters such as item_id, item_name, item_category, and item_brand. Product information was available elsewhere in browser-side data structures.
+
+**Impact:** GA4 cannot reliably attribute cart activity to specific products, reducing visibility into product-level ecommerce performance.
+
+---
+
+### Bug 2 — Parameter Bloat on Ecommerce Hits
+
+**Symptom:** Ecommerce payloads contain a large number of experiment and testing-related parameters.
+
+**Evidence:** Network requests contained 20+ additional parameters unrelated to core ecommerce measurement.
+
+**Impact:** Increased implementation complexity, larger payloads, and more difficult debugging and validation workflows.
+
+---
+
+### Bug 3 — Price Discrepancy Between UI and Payload
+
+**Symptom:** Product pricing observed in the analytics payload differs from the price displayed to users.
+
+**Evidence:** Product price shown on the product page did not match the value transmitted within ecommerce measurement payloads.
+
+**Impact:** Revenue validation becomes more difficult and pricing-related reporting requires additional verification.
+
+---
+
+### Bug 4 — Parallel GA4 and Google Ads Collection
+
+**Symptom:** Ecommerce interactions generate both GA4 and Google Ads collection requests.
+
+**Evidence:** Network inspection identified simultaneous requests being sent to GA4 and Google Ads endpoints during ecommerce interactions.
+
+**Impact:** Observation only. Dual collection is common but should be reviewed to ensure measurement consistency and avoid unintended duplication.
+
+---
+
+### Bug 5 — UA-GA4 Ecommerce Schema Mismatch
+
+**Symptom:** Ecommerce implementation continues to rely on UA-style Enhanced Ecommerce structures while collection occurs through GA4.
+
+**Evidence:** Rich product metadata exists within browser-observable ecommerce objects, but equivalent GA4 items[] mappings were not consistently present in network payloads.
+
+**Impact:** Product attribution, SKU analysis, variant reporting, and ecommerce funnel measurement may be incomplete because product data is not consistently reaching GA4-native ecommerce reports.
 
 ---
 
@@ -48,116 +153,6 @@ audit-011-gymshark-row/
 
 ---
 
-## Audit Scope
-
-The following user journey and implementation layers were reviewed:
-
-### Pages
-
-* Product Detail Page (PDP)
-
-### Interactions
-
-* Product page load
-* Product selection
-* Add-to-cart interaction
-
-### Analytics Layers
-
-* dataLayer
-* GTM observable behavior
-* GA4 network requests
-* Google Ads network requests
-
----
-
-## Findings Summary
-
-| ID    | Class       | Severity      | Finding                                         |
-| ----- | ----------- | ------------- | ----------------------------------------------- |
-| Bug 1 | [GA4]       | Critical      | add_to_cart fires without items[]               |
-| Bug 2 | [TAG]       | Medium        | 20+ experiment parameters attached to every hit |
-| Bug 3 | [GA4]       | Investigative | Price mismatch between UI and payload           |
-| Bug 4 | [TAG]       | Observation   | Parallel GA4 and Google Ads collection          |
-| Bug 5 | [DATALAYER] | Critical      | UA Enhanced Ecommerce schema remains active     |
-
----
-
-## Key Finding
-
-The most significant issue identified during this audit is a mismatch between the site's ecommerce data architecture and GA4 measurement requirements.
-
-Observed architecture:
-
-```text
-UA Enhanced Ecommerce dataLayer
-            ↓
-      GA4 Collection
-            ↓
- Missing Event Mapping
-            ↓
- Incomplete Ecommerce Payloads
-            ↓
- Lost Product Attribution
-```
-
-Rich product data exists within the dataLayer, including:
-
-* Product ID
-* Product Name
-* Product Category
-* SKU
-* Size Variants
-* Inventory Quantities
-
-However, this data is not consistently reaching GA4 ecommerce reports.
-
----
-
-## Business Impact
-
-Current implementation limits visibility into:
-
-* Product detail views
-* Product attribution
-* Add-to-cart analysis
-* Revenue by SKU
-* Variant performance
-* Inventory-level analytics
-* Product funnel performance
-
----
-
-## Audit Constraints
-
-This assessment was conducted under the following limitations:
-
-* External browser-based audit only
-* No GTM Preview Mode access
-* No GTM container access
-* No GA4 property access
-* No source code access
-
-All findings are based exclusively on:
-
-* Network request inspection
-* dataLayer inspection
-* Browser console analysis
-* GA4 payload validation
-
----
-
-## Recommended Reading Order
-
-1. executive-summary.md
-2. bug-05-ua-ga4-schema-mismatch.md
-3. bug-01-add-to-cart-missing-items.md
-4. bug-02-parameter-bloat.md
-5. bug-03-price-discrepancy.md
-6. bug-04-google-ads-observation.md
-
----
-
 ## Skills Demonstrated
 
 * GA4 Debugging
@@ -171,8 +166,10 @@ All findings are based exclusively on:
 
 ---
 
-## Audit Outcome
+## Disclaimer
 
-The audit identified a critical ecommerce measurement architecture issue that likely contributes to multiple downstream reporting gaps.
+This audit reflects only client-side observations available through browser inspection.
 
-The primary recommendation is to complete the migration from UA Enhanced Ecommerce event structures to GA4-native ecommerce events and validate that product data is passed through the GA4 items[] schema.
+Root cause attribution beyond browser-visible evidence requires GTM container access, GA4 property access, or server-side implementation review.
+
+All findings are constrained to externally observable evidence collected during the audit session.
