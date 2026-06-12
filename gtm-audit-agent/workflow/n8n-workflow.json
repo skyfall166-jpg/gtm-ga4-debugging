@@ -1,0 +1,156 @@
+{
+  "name": "tracking audit agent",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        0
+      ],
+      "id": "72baa749-f256-4a47-b862-4c798bdd00cc",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "jsCode": "const data = $input.first().json;\n\nif (!data || !data.signals) {\n  return [{\n    json: {\n      error: \"No signals from parser\",\n      raw: data\n    }\n  }];\n}\n\nconst findings = [];\n\n// GTM-01: Missing GA4 Config Tag\nif ((data.signals.ga4ConfigTagCount || 0) === 0) {\n  findings.push({\n    rule: \"GTM-01\",\n    status: \"FAIL\",\n    severity: \"CRITICAL\",\n    issue: \"No GA4 Config Tag found\",\n    evidence: \"ga4ConfigTagCount = 0\",\n    root_cause: \"[TAG] GA4 configuration missing\",\n    recommendation: \"Create a GA4 Configuration tag and fire it on All Pages\"\n  });\n}\n\n// GTM-03: Orphaned Tags\nfor (const tag of (data.orphanedTags || [])) {\n  findings.push({\n    rule: \"GTM-03\",\n    status: \"FAIL\",\n    severity: \"HIGH\",\n    issue: \"Tag has no firing trigger\",\n    evidence: `${tag.name} (${tag.id})`,\n    root_cause: \"[GTM] Tag cannot fire\",\n    recommendation: `Assign a trigger to ${tag.name}`\n  });\n}\n\n// GTM-04: Orphaned Triggers\nfor (const trigger of (data.orphanedTriggers || [])) {\n  findings.push({\n    rule: \"GTM-04\",\n    status: \"FAIL\",\n    severity: \"LOW\",\n    issue: \"Unused trigger\",\n    evidence: `${trigger.name} (${trigger.id})`,\n    root_cause: \"[GTM] Trigger not attached to any tag\",\n    recommendation: `Remove ${trigger.name}`\n  });\n}\n\n// GTM-05: Unused Variables\nfor (const variable of (data.unusedVariables || [])) {\n  findings.push({\n    rule: \"GTM-05\",\n    status: \"FAIL\",\n    severity: \"LOW\",\n    issue: \"Unused variable\",\n    evidence: `${variable.name}`,\n    root_cause: \"[GTM] Variable not referenced\",\n    recommendation: `Remove ${variable.name}`\n  });\n}\n\n// GTM-08: Excessive Custom HTML\nif ((data.signals.customHtmlTagCount || 0) > 3) {\n  findings.push({\n    rule: \"GTM-08\",\n    status: \"FAIL\",\n    severity: \"MEDIUM\",\n    issue: \"Too many Custom HTML tags\",\n    evidence: `${data.signals.customHtmlTagCount} Custom HTML tags`,\n    root_cause: \"[TAG] Increased maintenance and security risk\",\n    recommendation: \"Replace with native GTM templates where possible\"\n  });\n}\n\nreturn [{\n  json: {\n    container_name: data.container_name || \"Unknown\",\n    container_id: data.container_id || \"Unknown\",\n\n    findings_count: findings.length,\n\n    total_tags: data.signals.totalTags || 0,\n    total_triggers: data.signals.totalTriggers || 0,\n    total_variables: data.signals.totalVariables || 0,\n\n    signals: data.signals,\n    findings: findings\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        48
+      ],
+      "id": "e03ec678-c4a5-43b5-9716-4e20cc2c9bfb",
+      "name": "rule engine v1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cv = $('HTTP Request').first().json.containerVersion;\n\nif (!cv) {\n  throw new Error('containerVersion not found');\n}\n\nconst tags = (cv.tag || []).map(tag => {\n  const params = {};\n\n  (tag.parameter || []).forEach(p => {\n    params[p.key] = p.value;\n  });\n\n  return {\n    id: tag.tagId,\n    name: tag.name,\n    type: tag.type,\n    params,\n    trigger_ids: tag.firingTriggerId || [],\n    folderId: tag.parentFolderId || null,\n    isPaused: tag.paused || false,\n    consentStatus: tag.consentSettings?.consentStatus || null\n  };\n});\n\nconst triggers = (cv.trigger || []).map(t => ({\n  id: t.triggerId,\n  name: t.name,\n  type: t.type\n}));\n\nconst variables = (cv.variable || []).map(v => ({\n  id: v.variableId,\n  name: v.name,\n  type: v.type\n}));\nconst ga4ConfigTags = tags.filter(\n  t => [\"gaawc\", \"googtag\"].includes(t.type)\n);\nconst ga4EventTags = tags.filter(t => t.type === 'gaawe');\nconst orphanedTags = tags.filter(\n  t => t.trigger_ids.length === 0\n);\n\nconst allFiringIds = new Set(\n  tags.flatMap(t => t.trigger_ids)\n);\n\nconst orphanedTriggers = triggers.filter(\n  t => !allFiringIds.has(t.id)\n);\nconst allParamValues = tags.flatMap(t => Object.values(t.params).map(String));\nconst unusedVariables = variables.filter(v => {\n  // Skip ecommerce DLVs — referenced via object path not direct name\n  if (v.name.startsWith(\"dlv-ecommerce\")) return false;\n  return !allParamValues.some(val => val.includes(v.name));\n});\n\n\nconst ecomEvents = [\n  'view_item',\n  'view_item_list',\n  'add_to_cart',\n  'remove_from_cart',\n  'view_cart',\n  'begin_checkout',\n  'add_payment_info',\n  'purchase'\n];\n\nconst ecommerceEventNames = ga4EventTags\n  .map(t =>\n    t.params.eventName ||\n    t.params.event_name ||\n    null\n  )\n  .filter(Boolean)\n  .filter(e => ecomEvents.includes(e));\n\nconst pausedTags = tags.filter(\n  t => t.isPaused\n);\n\nconst consentNotSetTags = tags.filter(\n  t =>\n    !t.consentStatus ||\n    t.consentStatus === 'NOT_SET'\n);\n\nreturn [{\n  json: {\n    container_name:\n      cv.container?.name || 'unknown',\n\n    container_id:\n      cv.container?.publicId || 'unknown',\n\n    signals: {\n      totalTags: tags.length,\n      totalTriggers: triggers.length,\n      totalVariables: variables.length,\n\n      ga4ConfigTagCount:\n        ga4ConfigTags.length,\n\n      ga4EventTagCount:\n        ga4EventTags.length,\n\n      duplicateGA4ConfigRisk:\n        ga4ConfigTags.length > 1,\n\n      orphanedTagCount:\n        orphanedTags.length,\n\n      orphanedTriggerCount:\n        orphanedTriggers.length,\n\n      unusedVariableCount:\n        unusedVariables.length,\n\n      pausedTagCount:\n        pausedTags.length,\n\n      customHtmlTagCount:\n        tags.filter(\n          t => t.type === 'html'\n        ).length,\n\n      consentNotSetCount:\n        consentNotSetTags.length,\n\n      ecommerceEventNames\n    },\n\n    orphanedTags:\n      orphanedTags.map(t => ({\n        id: t.id,\n        name: t.name\n      })),\n\n    orphanedTriggers:\n      orphanedTriggers.map(t => ({\n        id: t.id,\n        name: t.name\n      })),\n\n    unusedVariables:\n      unusedVariables.map(v => ({\n        id: v.id,\n        name: v.name\n      }))\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        48
+      ],
+      "id": "d3a236f1-7154-4bae-ad22-95825facb6f4",
+      "name": "Code in JavaScript parser"
+    },
+    {
+      "parameters": {
+        "url": "https://raw.githubusercontent.com/skyfall166-jpg/gtm-ga4-debugging/main/01-ga4-ecommerce-demo/sample-gtm-container.json",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        80,
+        48
+      ],
+      "id": "0c620136-8243-49c1-acdb-5bd98c0a5dae",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=AQ.Ab8RN6Ja1tFeOQPHW3s3nuyMyXsytyeFM8fCk4A-UirV4XCTlw",
+        "sendHeaders": true,
+        "specifyHeaders": "json",
+        "jsonHeaders": "{\n  \"Content-Type\": \"application/json\"\n}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [\n    {\n      \"parts\": [\n        {\n          \"text\": \"You are a senior GTM audit specialist.\\n\\nGenerate a markdown audit report.\\n\\nSections:\\n1. Executive Summary\\n2. Container Overview\\n3. Signals Detected\\n4. Findings\\n5. Recommendations\\n\\nUse ONLY the provided JSON data. Do not invent findings. Every finding must reference evidence from the JSON.\\n\\nAudit Data:\\n{{ JSON.stringify($json, null, 2) }}\"\n        }\n      ]\n    }\n  ]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        592,
+        48
+      ],
+      "id": "24ddf809-4234-470b-bbd5-dfe3a75aa726",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{\n  json: {\n    report: $json.candidates[0].content.parts[0].text\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        48
+      ],
+      "id": "8b42d541-6c01-41df-9aab-ddaead0bea40",
+      "name": "extract report"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript parser",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript parser": {
+      "main": [
+        [
+          {
+            "node": "rule engine v1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "rule engine v1": {
+      "main": [
+        []
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "extract report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "727316de-e414-4ff3-9925-ecda05b9a1fe",
+  "meta": {
+    "instanceId": "5006da298f876936e7921455900ade490f27a5eb6f1613d13969f38e8ed27cc0"
+  },
+  "nodeGroups": [],
+  "id": "uOYUNHy2v6Y4UYKw",
+  "tags": []
+}
