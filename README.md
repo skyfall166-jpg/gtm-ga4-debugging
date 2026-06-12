@@ -8,6 +8,21 @@
 
 ---
 
+## Featured Project
+
+### GTM Audit Agent
+Automated GTM container auditing workflow built using n8n, JavaScript, and Gemini API.
+
+Key capabilities:
+- GTM JSON parsing
+- Rule-based validation
+- Health scoring
+- Risk classification
+- Automated audit reporting
+
+Repository:
+./gtm-audit-agent
+
 
 ## What I Do
 
